@@ -1,5 +1,6 @@
 package com.s0n1.thanksend.tcp;
 
+import com.s0n1.thanksend.util.CacheUtil;
 import com.s0n1.thanksend.util.Util;
 
 import javax.swing.*;
@@ -126,7 +127,10 @@ public class TCPSocket {
     private synchronized void connect(String host, int port) {
         String url = toUrl(host, port);
         try {
-            if (socketsRequested.containsKey(url)) return;
+            if (socketsRequested.containsKey(url)) {
+                System.out.println("Connection already exists");
+                return;
+            }
             if (url.equals(mUrl)) {
                 System.out.println("Can't connect with self!");
                 return;
@@ -267,8 +271,7 @@ public class TCPSocket {
 
         private void downloadFile(DataInputStream dataInputStream, String fileName, long length) {
             try {
-                final String saveDir = "temp/files/";
-                Util.makeDir(saveDir);
+                final String saveDir = CacheUtil.getPath();
                 File file = new File(saveDir + fileName);
                 if (file.exists()) {
                     file = new File(saveDir + UUID.randomUUID().toString() + fileName);
@@ -279,8 +282,7 @@ public class TCPSocket {
                 long remain = length;
                 int num;
                 while ((num = dataInputStream.read(buffer, 0, (int) Math.min(remain, buffer.length))) != -1) {
-                    fos.write(buffer, 0, num);
-                    fos.flush();
+                    fos.write(buffer, 0, num);// FileOutputStream不需要flush()
                     remain -= num;
                     if (remain <= 0) break;
                 }

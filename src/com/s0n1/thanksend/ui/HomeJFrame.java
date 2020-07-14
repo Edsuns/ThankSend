@@ -149,7 +149,7 @@ public class HomeJFrame extends JFrame implements TCPSocket.Callback {
      * 解析输入框中的内容并发送消息
      */
     private void sendMessage() {
-        java.util.List<Object> inputDatas = parseEditorInput();
+        List<Object> inputDatas = parseEditorInput();
         for (Object data : inputDatas) {
             if (data instanceof String && !data.equals("\n")) {
                 String text = (String) data;

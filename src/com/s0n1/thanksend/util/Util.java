@@ -1,11 +1,8 @@
 package com.s0n1.thanksend.util;
 
-import com.s0n1.thanksend.widget.view.ImageTransferable;
-
 import javax.imageio.ImageIO;
 import javax.imageio.ImageTypeSpecifier;
 import java.awt.*;
-import java.awt.datatransfer.Transferable;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -175,11 +172,6 @@ public class Util {
 
     public static String getID() {
         return Long.toHexString(getCRC32(HardwareID.getSerialNumber())).toUpperCase();
-    }
-
-    public static void copyImage(Image image) {
-        Transferable trans = new ImageTransferable(image);
-        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(trans, null);
     }
 
     public static void setCenterLocation(Window window) {

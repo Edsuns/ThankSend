@@ -1,5 +1,7 @@
 package com.s0n1.thanksend.util;
 
+import com.s0n1.thanksend.widget.view.ImageTransferable;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -13,17 +15,22 @@ import java.util.List;
 /**
  * Created by song on 20/06/2017.
  */
-public class ClipboardUtil {
+public abstract class ClipboardUtil {
     private static final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
 
     public static void copyString(String content) {
         if (content != null) {
-            Transferable tText = new StringSelection(content);
-            clipboard.setContents(tText, null);
+            Transferable stringSelection = new StringSelection(content);
+            clipboard.setContents(stringSelection, null);
         }
     }
 
-    public static Object paste() {
+    public static void copyImage(Image image) {
+        Transferable trans = new ImageTransferable(image);
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(trans, null);
+    }
+
+    public static Object getPaste() {
         Transferable transferable = clipboard.getContents(null);
         if (transferable != null) {
             try {

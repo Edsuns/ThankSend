@@ -1,7 +1,9 @@
 package com.s0n1.thanksend.widget.editor;
 
 import com.s0n1.thanksend.ui.PictureJFrame;
+import com.s0n1.thanksend.util.CacheUtil;
 import com.s0n1.thanksend.util.ClipboardUtil;
+import com.s0n1.thanksend.util.Util;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -11,6 +13,7 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -26,9 +29,9 @@ public class RCTextEditor extends JTextPane implements DropTargetListener {
 
     @Override
     public void paste() {
-        Object data = ClipboardUtil.paste();
+        Object data = ClipboardUtil.getPaste();
         if (data instanceof String) {
-            this.replaceSelection((String) data);
+            replaceSelection((String) data);
         } else if (data instanceof ImageIcon) {
             ImageIcon icon = (ImageIcon) data;
             adjustAndInsertIcon(icon);
@@ -42,7 +45,7 @@ public class RCTextEditor extends JTextPane implements DropTargetListener {
                 // 文件
                 else if (obj instanceof String) {
                     FileEditorThumbnail thumbnail = new FileEditorThumbnail((String) obj);
-                    this.insertComponent(thumbnail);
+                    insertComponent(thumbnail);
                 }
             }
         }
@@ -52,7 +55,6 @@ public class RCTextEditor extends JTextPane implements DropTargetListener {
      * 插入图片到编辑框，并自动调整图片大小
      */
     private void adjustAndInsertIcon(ImageIcon icon) {
-        String path = icon.getDescription();
         int iconWidth = icon.getIconWidth();
         int iconHeight = icon.getIconHeight();
         float scale = iconWidth * 1.0F / iconHeight;
@@ -68,17 +70,26 @@ public class RCTextEditor extends JTextPane implements DropTargetListener {
             needToScale = true;
         }
 
+        String path = icon.getDescription();
+        BufferedImage image = Util.toBufferedImage(icon.getImage());
         JLabel label = new JLabel();
         if (needToScale) {
+            if (path == null) {
+                path = CacheUtil.getPath() + Util.getCurrentTime() + " paste.jpg";
+                try {// 缓存粘贴的图片
+                    ImageIO.write(image, "jpg", new File(path));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
             ImageIcon scaledIcon = new ImageIcon(icon.getImage().getScaledInstance(iconWidth, iconHeight, Image.SCALE_SMOOTH));
-            scaledIcon.setDescription(icon.getDescription());
-            //this.insertIcon(scaledIcon);
+            scaledIcon.setDescription(path);
             label.setIcon(scaledIcon);
         } else {
-            //this.insertIcon(icon);
             label.setIcon(icon);
         }
 
+        String finalPath = path;
         label.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -86,7 +97,7 @@ public class RCTextEditor extends JTextPane implements DropTargetListener {
                 if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() == 2) {
                     new Thread(() -> {
                         try {
-                            PictureJFrame.getInstance().showPicture(ImageIO.read(new File(path)));
+                            PictureJFrame.getInstance().showPicture(ImageIO.read(new File(finalPath)));
                         } catch (IOException ioException) {
                             ioException.printStackTrace();
                         }

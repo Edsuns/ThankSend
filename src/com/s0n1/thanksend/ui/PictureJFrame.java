@@ -1,5 +1,6 @@
 package com.s0n1.thanksend.ui;
 
+import com.s0n1.thanksend.util.ClipboardUtil;
 import com.s0n1.thanksend.util.DeviceUtil;
 import com.s0n1.thanksend.util.Util;
 import com.s0n1.thanksend.widget.view.PictureViewer;
@@ -90,7 +91,7 @@ public class PictureJFrame extends JFrame {
         controlPanel.add(saveBtn);
 
         JButton copyBtn = new JButton(COPY);
-        copyBtn.addActionListener(e -> Util.copyImage(pictureViewer.getPicture()));
+        copyBtn.addActionListener(e -> ClipboardUtil.copyImage(pictureViewer.getPicture()));
         controlPanel.add(copyBtn);
     }
 
