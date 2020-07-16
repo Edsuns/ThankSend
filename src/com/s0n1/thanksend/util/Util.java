@@ -1,7 +1,6 @@
 package com.s0n1.thanksend.util;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageTypeSpecifier;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -183,13 +182,37 @@ public class Util {
         return dateFormat.format(new Date());
     }
 
-    public static byte[] toBytes(BufferedImage image) throws IOException {
+    public static byte[] toJPGBytes(BufferedImage image) throws IOException {
+        int width = image.getWidth(null);
+        int height = image.getHeight(null);
+        // Convert to TYPE_3BYTE_BGR for JPG format
+        BufferedImage jpg = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
+        jpg.getGraphics().drawImage(image, 0, 0, null);
         ByteArrayOutputStream arrayOutputStream = new ByteArrayOutputStream();
-        ImageTypeSpecifier type = ImageTypeSpecifier.createFromRenderedImage(image);
-        if (type.getColorModel().hasAlpha())
-            ImageIO.write(image, "png", arrayOutputStream);
-        else
-            ImageIO.write(image, "jpg", arrayOutputStream);
+        ImageIO.write(jpg, "JPG", arrayOutputStream);
+
         return arrayOutputStream.toByteArray();
+    }
+
+    public static byte[] toPNGBytes(Image image) throws IOException {
+        int width = image.getWidth(null);
+        int height = image.getHeight(null);
+        // Convert to TYPE_4BYTE_ABGR for PNG format
+        BufferedImage png = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
+        png.getGraphics().drawImage(image, 0, 0, null);
+        ByteArrayOutputStream arrayOutputStream = new ByteArrayOutputStream();
+        ImageIO.write(png, "PNG", arrayOutputStream);
+
+        return arrayOutputStream.toByteArray();
+    }
+
+    public static void savePNG(Image image, File file) throws IOException {
+        int width = image.getWidth(null);
+        int height = image.getHeight(null);
+        // Convert to TYPE_4BYTE_ABGR for PNG format
+        BufferedImage png = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
+        png.getGraphics().drawImage(image, 0, 0, null);
+        // Save image
+        ImageIO.write(png, "PNG", file);
     }
 }

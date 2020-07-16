@@ -75,9 +75,9 @@ public class RCTextEditor extends JTextPane implements DropTargetListener {
         JLabel label = new JLabel();
         if (needToScale) {
             if (path == null) {
-                path = CacheUtil.getPath() + Util.getCurrentTime() + " paste.jpg";
+                path = CacheUtil.getPath() + Util.getCurrentTime() + " paste.png";
                 try {// 缓存粘贴的图片
-                    ImageIO.write(image, "jpg", new File(path));
+                    Util.savePNG(image, new File(path));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

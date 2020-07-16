@@ -200,7 +200,7 @@ public class TCPSocket {
         }
 
         try {
-            byte[] file = Util.toBytes(image);
+            byte[] file = Util.toPNGBytes(image);
             long size = file.length;
             if (size <= 0) return;
 

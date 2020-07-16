@@ -5,7 +5,6 @@ import com.s0n1.thanksend.util.DeviceUtil;
 import com.s0n1.thanksend.util.Util;
 import com.s0n1.thanksend.widget.view.PictureViewer;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -107,7 +106,7 @@ public class PictureJFrame extends JFrame {
 
         try {// 保存文件
             File file = new File(dir + fileName);
-            ImageIO.write(pictureViewer.getPicture(), "PNG", file);
+            Util.savePNG(pictureViewer.getPicture(), file);
         } catch (IOException e) {
             e.printStackTrace();
         }
