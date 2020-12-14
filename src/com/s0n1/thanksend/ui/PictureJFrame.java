@@ -97,7 +97,7 @@ public class PictureJFrame extends JFrame {
     private void savePicture() {
         FileDialog fileDialog = new FileDialog(this, SAVE_SCREENSHOT, FileDialog.SAVE);
         fileDialog.setIconImage(getIconImage());
-        fileDialog.setFile("Screenshot_" + Util.getCurrentTime().replace(" ", "_") + ".png");
+        fileDialog.setFile("Picture_" + Util.getCurrentTime().replace(" ", "_") + ".png");
         fileDialog.setVisible(true);
         String dir = fileDialog.getDirectory();
         String fileName = fileDialog.getFile();

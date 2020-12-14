@@ -22,13 +22,6 @@ public class TCPSocket {
     private static final int DATA_IMAGE = 2;
     private static final int DATA_FILE = 3;
 
-    private final ExecutorService threadPool;
-    private final HashMap<String, Socket> socketsAccepted = new HashMap<>();
-    private final HashMap<String, Socket> socketsRequested = new HashMap<>();
-
-    private String mHost;
-    private String mUrl;
-
     private static TCPSocket instance;
 
     public static TCPSocket getInstance() {
@@ -38,30 +31,32 @@ public class TCPSocket {
         return instance;
     }
 
+    private final ExecutorService threadPool;
+    private final HashMap<String, Socket> socketsAccepted = new HashMap<>();
+    private final HashMap<String, Socket> socketsRequested = new HashMap<>();
+
+    private String mHost;
+    private String mUrl;
+
     private TCPSocket() {
         threadPool = Executors.newFixedThreadPool(20);
     }
 
-    private boolean started;
-
     public void start(int port) {
-        if (started) return;
-        started = true;
+        if (mUrl != null) return;
 
-        InetAddress mAddress = Util.getIpBySocket();
+        InetAddress mAddress = Util.getLocalHost();
         if (mAddress != null) {
             mHost = mAddress.getHostAddress();
             mUrl = toUrl(mHost, port);
         } else {
-            // TODO 无局域网连接
-            mUrl = "error";
-            System.out.println("Without Network!");
+            System.out.println("Network Broken!");
             System.exit(-1);
         }
         threadPool.execute(() -> {
             try {
-                ServerSocket serverSocket = new ServerSocket(port);
-                while (started) {
+                ServerSocket serverSocket = new ServerSocket(port, 50, mAddress);
+                while (!Thread.currentThread().isInterrupted()) {
                     Socket socket = serverSocket.accept();
                     InputStream inputStream = socket.getInputStream();
                     DataInputStream dataInputStream = new DataInputStream(inputStream);
@@ -136,7 +131,9 @@ public class TCPSocket {
                 return;
             }
 
-            Socket socket = new Socket(host, port);
+            final int timeout = 5000;
+            Socket socket = new Socket();
+            socket.connect(new InetSocketAddress(host, port), timeout);
             OutputStream outputStream = socket.getOutputStream();
             DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
 
@@ -148,11 +145,11 @@ public class TCPSocket {
 
             socketsRequested.put(url, socket);
             threadPool.execute(new Receiver(socket, url));
-        } catch (ConnectException e) {
+        } catch (ConnectException | SocketTimeoutException e) {
             if (mCallback != null) {
                 mCallback.onReceive(SystemMessage.CONNECTION_FAILED, url);
             }
-            System.out.println("Connection Failed!");
+            System.out.println(e.getMessage());
         } catch (IOException e) {
             e.printStackTrace();
         }

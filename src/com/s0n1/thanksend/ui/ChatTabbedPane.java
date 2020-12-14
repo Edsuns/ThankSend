@@ -4,13 +4,14 @@ import com.s0n1.thanksend.tcp.Message;
 
 import javax.swing.*;
 import java.awt.image.BufferedImage;
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Edsuns@qq.com on 2020/6/16
  */
 public class ChatTabbedPane extends JTabbedPane {
-    private final Hashtable<String, MessageJPanel> panelHashtable = new Hashtable<>();
+    private final Map<String, MessageJPanel> panelHashtable = new HashMap<>();
 
     public ChatTabbedPane() {
         super(JTabbedPane.LEFT);

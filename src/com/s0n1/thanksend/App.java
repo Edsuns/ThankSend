@@ -40,7 +40,7 @@ public class App {
         TCPSocket.getInstance().start(port);
 
         homeJFrame = new HomeJFrame();
-        homeJFrame.setTitle(Util.getIpBySocket() + ":" + port);
+        homeJFrame.setTitle(Util.getLocalHost() + ":" + port);
         Util.setCenterLocation(homeJFrame);
     }
 

@@ -36,6 +36,7 @@ public abstract class ClipboardUtil {
             try {
                 if (transferable.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
                     Object transferData = transferable.getTransferData(DataFlavor.javaFileListFlavor);
+                    // noinspection unchecked
                     List<File> files = (List<File>) transferData;
                     List<Object> data = new ArrayList<>();
                     for (File file : files) {
@@ -74,9 +75,6 @@ public abstract class ClipboardUtil {
     }
 
     private static ImageIcon transferImageFileToImageIcon(File file) {
-        ImageIcon icon = new ImageIcon(file.getAbsolutePath());
-        icon.setDescription(file.getAbsolutePath());
-        return icon;
+        return new ImageIcon(file.getAbsolutePath());
     }
 }
-

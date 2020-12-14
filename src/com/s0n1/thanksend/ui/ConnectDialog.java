@@ -5,7 +5,10 @@ import com.s0n1.thanksend.tcp.TCPSocket;
 import com.s0n1.thanksend.widget.view.RCButton;
 
 import javax.swing.*;
+import javax.swing.text.AbstractDocument;
 import java.awt.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 /**
  * Created by Edsuns@qq.com on 2020/6/16
@@ -25,11 +28,24 @@ public class ConnectDialog extends JDialog {
 
         JTextField portText = new JTextField("2020");
         portText.setBounds(170, 30, 60, 30);
+        AbstractDocument doc = (AbstractDocument) portText.getDocument();
+        doc.setDocumentFilter(new DigitFilter());
+        portText.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+                JTextField field = (JTextField) e.getSource();
+                if (field.getText().length() >= 5 && field.getSelectedText() == null
+                        && !(e.getKeyChar() == KeyEvent.VK_DELETE || e.getKeyChar() == KeyEvent.VK_BACK_SPACE)) {
+                    getToolkit().beep();
+                    e.consume();
+                }
+            }
+        });
         add(portText);
 
         JLabel tipLabel = new JLabel("Type IP and Port.");
         tipLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        tipLabel.setBounds(20, 70, 200, 30);
+        tipLabel.setBounds(25, 70, 200, 30);
         add(tipLabel);
 
         RCButton connectBtn = new RCButton("Connect");
@@ -43,7 +59,7 @@ public class ConnectDialog extends JDialog {
             }
             String url = TCPSocket.toUrl(host, port);
             String mUrl = TCPSocket.getInstance().getUrl();
-            if (url.equals(mUrl) || port > 99999 || port < 0) {
+            if (url.equals(mUrl) || port > 65535 || port < 0) {
                 portText.setText("");
                 tipLabel.setText("Invalid Port!");
                 return;

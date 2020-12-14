@@ -6,12 +6,10 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.zip.CRC32;
 
 /**
@@ -45,63 +43,63 @@ public class Util {
         return path.substring(path.lastIndexOf(System.getProperty("file.separator")) + 1);
     }
 
-    public static void makeDir(String dir) {
-        File file = new File(dir);
-        if (!file.exists() && file.mkdirs()) {
-            System.out.println("创建目录：" + file.getAbsolutePath());
-        }
-    }
+    public static InetAddress getLocalHost() {
+        InetAddress fallback = null;
+        DatagramSocket datagramSocket = null;
+        Socket socket = null;
+        try {
+            fallback = InetAddress.getLocalHost();
+            if (fallback.isSiteLocalAddress())
+                return fallback;
 
-//    /**
-//     * 获取本地局域网IP地址，即获得有线或者WiFi地址
-//     * 过滤虚拟机、蓝牙等地址
-//     *
-//     * @return IP
-//     */
-//    private static InetAddress getRealIP() {
-//        try {
-//            Enumeration<NetworkInterface> allNetInterfaces = NetworkInterface
-//                    .getNetworkInterfaces();
-//            while (allNetInterfaces.hasMoreElements()) {
-//                NetworkInterface netInterface = allNetInterfaces.nextElement();
-//
-//                // 去除回环接口，子接口，未运行和接口
-//                if (netInterface.isLoopback() || netInterface.isVirtual()
-//                        || !netInterface.isUp()) {
-//                    continue;
-//                }
-//
-//                // 检查网卡名称，过滤虚拟机、蓝牙等地址
-//                String name = netInterface.getDisplayName();
-//                if (!name.contains("Intel") && !name.contains("Realtek")) {
-//                    continue;
-//                }
-//
-//                Enumeration<InetAddress> addresses = netInterface.getInetAddresses();
-//                while (addresses.hasMoreElements()) {
-//                    InetAddress address = addresses.nextElement();
-//                    if (address.isSiteLocalAddress()) {
-//                        return address;
-//                    }
-//                }
-//                break;
-//            }
-//        } catch (SocketException e) {
-//            e.printStackTrace();
-//        }
-//        return null;
-//    }
+            // If the device is completely offline, the code after this line of code is redundant,
+            // and this line of code will throw a UnknownHostException to break them.
+            SocketAddress socketAddress = new InetSocketAddress("connectivitycheck.gstatic.com", 80);
 
-    public static InetAddress getIpBySocket() {
-        try (final DatagramSocket socket = new DatagramSocket()) {
-            socket.connect(InetAddress.getByName("8.8.8.8"), 10002);
-            if (socket.getLocalAddress().isSiteLocalAddress()) {
-                return socket.getLocalAddress();
+            // looking for SiteLocalAddress in NetworkInterfaces
+            Enumeration<NetworkInterface> allNetInterfaces = NetworkInterface.getNetworkInterfaces();
+            while (allNetInterfaces.hasMoreElements()) {
+                NetworkInterface netInterface = allNetInterfaces.nextElement();
+
+                if (netInterface.isLoopback() || netInterface.isVirtual() || !netInterface.isUp()) {
+                    continue;
+                }
+
+                Enumeration<InetAddress> addresses = netInterface.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    InetAddress address = addresses.nextElement();
+                    if (address.isSiteLocalAddress()) {
+                        return address;
+                    }
+                }
             }
-        } catch (UnknownHostException | SocketException e) {
-            e.printStackTrace();
+
+            // get SiteLocalAddress by DatagramSocket
+            datagramSocket = new DatagramSocket();
+            datagramSocket.connect(InetAddress.getByName("8.8.8.8"), 28888);
+            InetAddress address = datagramSocket.getLocalAddress();
+            if (address.isSiteLocalAddress())
+                return address;
+
+            // get SiteLocalAddress by Socket
+            socket = new Socket();
+            socket.connect(socketAddress, 600);
+            address = socket.getLocalAddress();
+            if (address.isSiteLocalAddress())
+                return address;
+        } catch (IOException ignored) {
+        } finally {
+            if (datagramSocket != null) {
+                datagramSocket.close();
+            }
+            if (socket != null) {
+                try {
+                    socket.close();
+                } catch (IOException ignored) {
+                }
+            }
         }
-        return null;
+        return fallback;
     }
 
 //    public static String getMAC(InetAddress address) {
@@ -187,7 +185,9 @@ public class Util {
         int height = image.getHeight(null);
         // Convert to TYPE_3BYTE_BGR for JPG format
         BufferedImage jpg = new BufferedImage(width, height, BufferedImage.TYPE_3BYTE_BGR);
-        jpg.getGraphics().drawImage(image, 0, 0, null);
+        Graphics graphics = jpg.createGraphics();
+        graphics.drawImage(image, 0, 0, null);
+        graphics.dispose();
         ByteArrayOutputStream arrayOutputStream = new ByteArrayOutputStream();
         ImageIO.write(jpg, "JPG", arrayOutputStream);
 
@@ -199,7 +199,9 @@ public class Util {
         int height = image.getHeight(null);
         // Convert to TYPE_4BYTE_ABGR for PNG format
         BufferedImage png = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
-        png.getGraphics().drawImage(image, 0, 0, null);
+        Graphics graphics = png.createGraphics();
+        graphics.drawImage(image, 0, 0, null);
+        graphics.dispose();
         ByteArrayOutputStream arrayOutputStream = new ByteArrayOutputStream();
         ImageIO.write(png, "PNG", arrayOutputStream);
 
@@ -211,7 +213,9 @@ public class Util {
         int height = image.getHeight(null);
         // Convert to TYPE_4BYTE_ABGR for PNG format
         BufferedImage png = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
-        png.getGraphics().drawImage(image, 0, 0, null);
+        Graphics graphics = png.createGraphics();
+        graphics.drawImage(image, 0, 0, null);
+        graphics.dispose();
         // Save image
         ImageIO.write(png, "PNG", file);
     }
